@@ -17,6 +17,8 @@ Writes to `data/generated/` (not committed):
   formats and money formats)
 - `scanned/doc_NNN.jpg`: the same invoice rendered at 150 dpi and degraded with skew,
   blur, noise and JPEG compression
+- `scanned_pdf/doc_NNN.pdf`: the same scan wrapped in a PDF with no text layer, which
+  is how scanned invoices usually arrive
 - `ground_truth.jsonl`: the values exactly as printed, plus `planted_errors`
 
 About 30% of invoices carry one planted error, for testing the validation rules:

@@ -1,13 +1,16 @@
 """Generate synthetic invoices with ground-truth labels and planted errors.
 
-Every invoice is written twice: as a text-layer PDF and as a degraded JPG that
-imitates a phone or office scan. Ground truth records the values exactly as
-printed, so planted errors (wrong GST, sums that don't add up, duplicates) are
-part of the labels and the validation rules can be scored against them.
+Every invoice is written three times: as a text-layer PDF, as a degraded JPG that
+imitates a phone or office scan, and as that same scan wrapped in a PDF with no
+text layer (how scanned invoices usually arrive). Ground truth records the values
+exactly as printed, so planted errors (wrong GST, sums that don't add up,
+duplicates) are part of the labels and the validation rules can be scored against
+them.
 
 Outputs (under --out, default data/generated/):
   pdf/<doc_id>.pdf
   scanned/<doc_id>.jpg
+  scanned_pdf/<doc_id>.pdf
   ground_truth.jsonl
 
 Usage:
@@ -259,8 +262,11 @@ def draw_invoice(path: Path, inv: dict) -> None:
     c.save()
 
 
-def make_scan(pdf_path: Path, jpg_path: Path, rng: random.Random) -> None:
-    """Render the PDF and degrade it: slight skew, blur, noise, low contrast, JPEG artefacts."""
+def make_scan(pdf_path: Path, jpg_path: Path, scanned_pdf_path: Path, rng: random.Random) -> None:
+    """Render the PDF and degrade it: slight skew, blur, noise, low contrast, JPEG artefacts.
+
+    The JPG is then wrapped in an image-only PDF, so both scan files hold the same pixels.
+    """
     pdf = pdfium.PdfDocument(str(pdf_path))
     try:
         img = pdf[0].render(scale=150 / 72).to_pil().convert("L")
@@ -271,6 +277,8 @@ def make_scan(pdf_path: Path, jpg_path: Path, rng: random.Random) -> None:
     img = Image.blend(img, Image.effect_noise(img.size, rng.uniform(20, 40)), rng.uniform(0.06, 0.12))
     img = ImageEnhance.Contrast(img).enhance(rng.uniform(0.75, 1.0))
     img.save(jpg_path, "JPEG", quality=rng.randint(45, 70))
+    with Image.open(jpg_path) as jpg:
+        jpg.save(scanned_pdf_path, "PDF", resolution=150)
 
 
 def to_json(inv: dict) -> str:
@@ -291,7 +299,7 @@ def main() -> None:
     args = parser.parse_args()
 
     rng = random.Random(args.seed)
-    for sub in ("pdf", "scanned"):
+    for sub in ("pdf", "scanned", "scanned_pdf"):
         shutil.rmtree(args.out / sub, ignore_errors=True)
         (args.out / sub).mkdir(parents=True)
 
@@ -319,7 +327,12 @@ def main() -> None:
         for inv in invoices:
             pdf_path = args.out / "pdf" / f"{inv['doc_id']}.pdf"
             draw_invoice(pdf_path, inv)
-            make_scan(pdf_path, args.out / "scanned" / f"{inv['doc_id']}.jpg", rng)
+            make_scan(
+                pdf_path,
+                args.out / "scanned" / f"{inv['doc_id']}.jpg",
+                args.out / "scanned_pdf" / f"{inv['doc_id']}.pdf",
+                rng,
+            )
             f.write(to_json(inv) + "\n")
 
     summary = {}
