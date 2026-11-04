@@ -1,0 +1,37 @@
+# Credentials — never commit
+.env
+.aws/
+*.pem
+credentials
+config.local.*
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environment
+.venv/
+venv/
+env/
+
+# Build artefacts (Lambda packaging, CloudFormation package output)
+build/
+dist/
+*.zip
+packaged*.yaml
+
+# Generated data (synthetic invoices, extraction outputs, eval results)
+data/generated/
+outputs/
+
+# IDE / Claude Code local settings
+.vscode/
+.idea/
+.claude/settings.local.json
+
+# OS
+.DS_Store
+Thumbs.db
