@@ -1,0 +1,14 @@
+[project]
+name = "aws-invoice-extraction"
+version = "0.1.0"
+description = "Invoice extraction with Amazon Nova on Bedrock, Aurora PostgreSQL and CloudFormation"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "pillow>=13.0.0,<14.0.0",
+    "pypdfium2>=5.14.0,<6.0.0",
+    "reportlab>=5.1.0,<6.0.0",
+]
+
+[tool.uv]
+package = false
