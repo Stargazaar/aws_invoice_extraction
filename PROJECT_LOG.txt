@@ -16,7 +16,7 @@ Extract structured data from invoices (text PDFs and scanned images) with an LLM
 check it with deterministic rules, and store it in a relational database.
 
 Covers:
-  - Amazon Bedrock: Claude Haiku 5.5 via inference profile, Converse API, tool use
+  - Amazon Bedrock: Amazon Nova 2 Lite via inference profile, Converse API, tool use
   - Aurora PostgreSQL Serverless v2 (scale to zero) with the RDS Data API
   - S3 -> EventBridge -> Lambda event-driven pipeline
   - CloudFormation for all infrastructure
@@ -26,7 +26,7 @@ Covers:
 Constraints:
   - Near-zero cost; tear down when finished
   - Synthetic or public invoice data only
-  - Region ap-southeast-1 (Singapore)
+  - Region us-east-1 (Singapore blocked for Bedrock on this account; see section 3)
 
 
 --------------------------------------------------------------------------------
@@ -40,7 +40,20 @@ Constraints:
 3. ERRORS ENCOUNTERED AND FIXES
 --------------------------------------------------------------------------------
 
-  (none yet)
+  ERROR: AccessDeniedException: "Your account is currently being verified"
+         (Claude Haiku 5.5, ap-southeast-1)
+  ERROR: ThrottlingException: "Too many tokens per day" (Nova 2 Lite, ap-southeast-1)
+  CAUSE: Service Quotas showed 0 tokens/day for Bedrock models in ap-southeast-1,
+         marked non-adjustable: a region-level hold on the account, not IAM.
+         us-east-1 and us-west-2 had normal quotas (~11.5B tokens/day).
+  FIX:   Moved the whole project to us-east-1. Checked with:
+           aws service-quotas list-service-quotas --service-code bedrock ...
+         The hold can only be lifted by AWS Support; not needed now.
+
+  ERROR: AccessDeniedException: "anthropic.claude-haiku-5-5 is not available for
+         this account" (us-east-1)
+  CAUSE: Anthropic models need a one-time use-case form per account.
+  FIX:   Not submitted; switched to Amazon Nova 2 Lite, which needs no form.
 
 
 --------------------------------------------------------------------------------
