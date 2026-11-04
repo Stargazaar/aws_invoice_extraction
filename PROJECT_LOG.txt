@@ -1,0 +1,74 @@
+================================================================================
+PROJECT LOG — AWS Invoice Extraction
+================================================================================
+Started:      November 2026
+Author:       Stargazaar
+GitHub:       https://github.com/Stargazaar/aws_invoice_extraction
+Status:       PLANNING (as of 2026-11-04)
+================================================================================
+
+
+--------------------------------------------------------------------------------
+1. PROJECT GOAL
+--------------------------------------------------------------------------------
+
+Extract structured data from invoices (text PDFs and scanned images) with an LLM,
+check it with deterministic rules, and store it in a relational database.
+
+Covers:
+  - Amazon Bedrock: Claude Haiku 5.5 via inference profile, Converse API, tool use
+  - Aurora PostgreSQL Serverless v2 (scale to zero) with the RDS Data API
+  - S3 -> EventBridge -> Lambda event-driven pipeline
+  - CloudFormation for all infrastructure
+  - Evaluation against ground-truth labels; comparison with Textract and
+    Bedrock Data Automation
+
+Constraints:
+  - Near-zero cost; tear down when finished
+  - Synthetic or public invoice data only
+  - Region ap-southeast-1 (Singapore)
+
+
+--------------------------------------------------------------------------------
+2. ARCHITECTURE
+--------------------------------------------------------------------------------
+
+  (to be filled in)
+
+
+--------------------------------------------------------------------------------
+3. ERRORS ENCOUNTERED AND FIXES
+--------------------------------------------------------------------------------
+
+  (none yet)
+
+
+--------------------------------------------------------------------------------
+4. KEY CONCEPTS LEARNED
+--------------------------------------------------------------------------------
+
+  Aurora Serverless v2 + Data API vs RDS instance:
+    The Data API is an HTTPS endpoint, so Lambda can run outside the VPC.
+    A Lambda inside a VPC would need a NAT Gateway (~$32/month) or VPC endpoints
+    to reach Bedrock and S3. Aurora at 0 ACU pauses when idle; the first query
+    after a pause waits roughly 15 seconds while it resumes.
+
+  CloudFormation vs SAM vs CDK:
+    SAM is a transform on top of CloudFormation; CDK generates CloudFormation from
+    code. Plain CloudFormation chosen for consistency with other projects.
+
+  CLI credentials:
+    "aws login" (AWS CLI 2.32+) reuses the console sign-in to issue short-lived,
+    auto-rotating credentials. No long-term access keys stored locally.
+
+
+--------------------------------------------------------------------------------
+5. COST MANAGEMENT
+--------------------------------------------------------------------------------
+
+  (to be filled in)
+
+
+================================================================================
+END OF LOG
+================================================================================
